@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="container">
+    <!-- Секция таймера -->
+    <section class="timer-section">
+      <div class="mode-indicator" id="mode-indicator">Работа</div>
+      <div class="timer-display" id="timer-display">25:00</div>
+      <div class="timer-controls">
+        <button class="btn btn-primary" id="start-btn">Старт</button>
+        <button class="btn btn-secondary" id="pause-btn">Пауза</button>
+        <button class="btn btn-secondary" id="reset-btn">Сброс</button>
+      </div>
+    </section>
+
+    <!-- Секция задач -->
+    <section class="tasks-section">
+      <h2>Задачи</h2>
+      <div class="task-input-group">
+        <input type="text" id="new-task-input" placeholder="Новая задача...">
+        <button class="btn btn-primary" id="add-task-btn">Добавить</button>
+      </div>
+      <ul class="task-list" id="task-list">
+        <!-- Сюда JS будет добавлять элементы задач -->
+      </ul>
+    </section>
+  </main>
+
+  <!-- Подключение JS будет позже -->
+  <!-- <script src="js/app.js"></script> -->
+   <script src="js/app.js"></script>
+</body>
+</html>
