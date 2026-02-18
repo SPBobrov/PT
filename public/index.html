@@ -19,6 +19,19 @@
       </div>
     </section>
 
+    <!-- Выбор активности -->
+    <section class="activity-section">
+      <label for="activity-select">Активность:</label>
+      <select id="activity-select" class="activity-select">
+        <option value="work">Работа</option>
+        <option value="study">Учеба</option>
+        <option value="reading">Чтение</option>
+        <option value="writing">Текст</option>
+        <option value="sport">Физкультура</option>
+        <option value="rest">Отдых</option>
+      </select>
+    </section>
+
     <!-- Секция задач -->
     <section class="tasks-section">
       <h2>Задачи</h2>
@@ -32,8 +45,9 @@
     </section>
   </main>
 
-  <!-- Подключение JS будет позже -->
-  <!-- <script src="js/app.js"></script> -->
-   <script src="js/app.js"></script>
+  <!-- Аудио для звукового сигнала -->
+  <audio id="timer-end-sound" src="sounds/bell.mp3" preload="auto"></audio>
+
+  <script src="js/app.js"></script>
 </body>
 </html>

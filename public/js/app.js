@@ -6,12 +6,15 @@ const Timer = {
   SHORT_BREAK: 5 * 60,
   LONG_BREAK: 15 * 60,
 
-  // Текущий режим (по умолчанию работа)
+  // Текущий режим
   currentMode: 'work',
 
-  duration: 25 * 60,        // оставшееся время в секундах (актуальное)
-  totalDuration: 25 * 60,    // полная длительность текущего сеанса (нужна для расчёта)
-  startTime: null,           // время старта (timestamp) в миллисекундах
+  // Текущая активность (значение из select)
+  currentActivity: 'work',
+
+  duration: 25 * 60,
+  totalDuration: 25 * 60,
+  startTime: null,
   timerInterval: null,
   isRunning: false,
 
@@ -25,14 +28,14 @@ const Timer = {
     }
   },
 
-  // Форматирование времени (MM:SS)
+  // Форматирование времени
   formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   },
 
-  // Обновление отображения таймера в DOM
+  // Обновление отображения таймера
   updateDisplay() {
     const timerElement = document.getElementById('timer-display');
     if (timerElement) {
@@ -53,7 +56,7 @@ const Timer = {
     indicator.textContent = modeNames[this.currentMode] || 'Работа';
   },
 
-  // Основная функция, вызываемая каждую секунду (или при возобновлении вкладки)
+  // Основная функция тика
   tick() {
     if (!this.isRunning || !this.startTime) return;
 
@@ -63,15 +66,47 @@ const Timer = {
 
     if (remaining <= 0) {
       // Таймер завершился
+      this.duration = 0;
+      this.updateDisplay();
       this.pause();
-      // Здесь можно добавить автоматическое переключение режима, звук и т.д.
-      // Например: this.switchMode('shortBreak');
+
+      // Звуковой сигнал
+      const sound = document.getElementById('timer-end-sound');
+      if (sound) {
+        sound.play().catch(e => console.log('Не удалось воспроизвести звук', e));
+      }
+
+      // Если завершился рабочий интервал – сохраняем сессию активности
+      if (this.currentMode === 'work') {
+        this.saveSession();
+      }
+
+      // Автоматическое переключение режима (опционально)
+      // if (this.currentMode === 'work') this.switchMode('shortBreak');
+      // else if (this.currentMode === 'shortBreak') this.switchMode('work');
       return;
     }
 
-    // Обновляем duration и отображение
     this.duration = remaining;
     this.updateDisplay();
+  },
+
+  // Сохранение сессии активности на сервере
+  saveSession() {
+    const activityType = this.currentActivity;
+    const duration = this.WORK_TIME; // сохраняем полную длительность рабочего периода
+
+    fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ activityType, duration }),
+    })
+      .then(response => {
+        if (!response.ok) {
+          console.error('Ошибка сохранения сессии:', response.statusText);
+        }
+      })
+      .catch(err => console.error('Ошибка сети при сохранении сессии:', err));
   },
 
   // Запуск таймера
@@ -80,12 +115,9 @@ const Timer = {
 
     this.isRunning = true;
     this.startTime = Date.now();
-    this.totalDuration = this.duration; // запоминаем, сколько должны отсчитать
+    this.totalDuration = this.duration;
 
-    // Запускаем интервал
     this.timerInterval = setInterval(() => this.tick(), 1000);
-
-    // Сразу вызываем tick, чтобы не ждать первую секунду
     this.tick();
   },
 
@@ -97,10 +129,9 @@ const Timer = {
     }
     this.isRunning = false;
     this.startTime = null;
-    // duration уже актуально после последнего tick
   },
 
-  // Сброс к начальному времени текущего режима
+  // Сброс
   reset() {
     this.pause();
     this.duration = this.getDurationByMode(this.currentMode);
@@ -114,14 +145,17 @@ const Timer = {
     this.duration = this.getDurationByMode(mode);
     this.updateDisplay();
     this.updateModeIndicator();
+  },
+
+  // Установка активности (вызывается при изменении select)
+  setActivity(activity) {
+    this.currentActivity = activity;
   }
 };
 
 // Обработчик видимости страницы
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && Timer.isRunning) {
-    // Вкладка стала активной – принудительно обновляем таймер,
-    // чтобы учесть время, прошедшее в фоне
     Timer.tick();
   }
 });
@@ -130,6 +164,7 @@ document.addEventListener('visibilitychange', () => {
 document.addEventListener('DOMContentLoaded', () => {
   Timer.switchMode('work');
 
+  // Кнопки управления таймером
   const startBtn = document.getElementById('start-btn');
   const pauseBtn = document.getElementById('pause-btn');
   const resetBtn = document.getElementById('reset-btn');
@@ -137,4 +172,17 @@ document.addEventListener('DOMContentLoaded', () => {
   if (startBtn) startBtn.addEventListener('click', () => Timer.start());
   if (pauseBtn) pauseBtn.addEventListener('click', () => Timer.pause());
   if (resetBtn) resetBtn.addEventListener('click', () => Timer.reset());
+
+  // Выбор активности
+  const activitySelect = document.getElementById('activity-select');
+  if (activitySelect) {
+    activitySelect.addEventListener('change', (e) => {
+      Timer.setActivity(e.target.value);
+    });
+    // Устанавливаем начальное значение
+    Timer.setActivity(activitySelect.value);
+  }
+
+  // Здесь будет код для работы с задачами (TaskManager) – его нужно добавить позже
+  // Пока оставляем заглушку
 });

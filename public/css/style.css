@@ -201,3 +201,33 @@ body {
     width: 100%;
   }
 }
+
+/* Добавить в конец файла */
+.activity-section {
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.activity-section label {
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.activity-select {
+  padding: 10px 15px;
+  border: 2px solid #ecf0f1;
+  border-radius: 50px;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background-color: white;
+  flex: 1;
+  min-width: 200px;
+}
+
+.activity-select:focus {
+  border-color: #e74c3c;
+}
