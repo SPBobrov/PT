@@ -22,14 +22,20 @@
     <!-- Выбор активности -->
     <section class="activity-section">
       <label for="activity-select">Активность:</label>
-      <select id="activity-select" class="activity-select">
-        <option value="work">Работа</option>
-        <option value="study">Учеба</option>
-        <option value="reading">Чтение</option>
-        <option value="writing">Текст</option>
-        <option value="sport">Физкультура</option>
-        <option value="rest">Отдых</option>
-      </select>
+      <select id="activity-select" class="activity-select"></select>
+      <button class="btn-icon" id="toggle-activity-manager" title="Управление активностями">⚙️</button>
+    </section>
+
+    <!-- Управление активностями (скрыто по умолчанию) -->
+    <section class="activity-management" id="activity-manager" style="display: none;">
+      <div class="add-activity">
+        <input type="text" id="new-activity-input" placeholder="Новая активность...">
+        <button class="btn btn-primary" id="add-activity-btn">Добавить</button>
+      </div>
+      <ul class="activity-list" id="activity-list">
+        <!-- динамический список активностей с кнопками удаления -->
+      </ul>
+      <button class="btn btn-secondary" id="close-activity-manager">Закрыть</button>
     </section>
 
     <!-- Выбор длительности рабочего интервала -->
@@ -38,7 +44,11 @@
       <select id="work-duration" class="duration-select">
         <option value="1500">25 минут</option>
         <option value="300">5 минут</option>
+        <option value="custom">Пользовательская</option>
       </select>
+      <div id="custom-duration-container" style="display: none;">
+        <input type="number" id="custom-minutes" min="1" value="25" class="custom-input"> минут
+      </div>
     </section>
 
     <!-- Поле для комментария к сессии -->
@@ -47,19 +57,8 @@
       <input type="text" id="session-comment" placeholder="Что делали?">
     </section>
 
-    <!-- Секция задач -->
-    <section class="tasks-section">
-      <h2>Задачи</h2>
-      <div class="task-input-group">
-        <input type="text" id="new-task-input" placeholder="Новая задача...">
-        <button class="btn btn-primary" id="add-task-btn">Добавить</button>
-      </div>
-      <ul class="task-list" id="task-list">
-        <!-- Сюда JS будет добавлять элементы задач -->
-      </ul>
-    </section>
     <!-- Версия продукта -->
-    <div class="version">Версия 1.2.0</div>
+    <div class="version">Версия 1.4.0</div>
   </main>
 
   <!-- Аудио для звукового сигнала -->

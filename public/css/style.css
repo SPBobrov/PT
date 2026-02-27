@@ -90,121 +90,9 @@ body {
   background-color: #bdc3c7;
 }
 
-/* Секция задач */
-.tasks-section h2 {
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  color: #2c3e50;
-  border-bottom: 2px solid #ecf0f1;
-  padding-bottom: 10px;
-}
-
-.task-input-group {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
-}
-
-#new-task-input {
-  flex: 1;
-  padding: 12px 15px;
-  border: 2px solid #ecf0f1;
-  border-radius: 50px;
-  font-size: 1rem;
-  outline: none;
-  transition: border-color 0.2s;
-  min-width: 200px;
-}
-
-#new-task-input:focus {
-  border-color: #e74c3c;
-}
-
-.task-list {
-  list-style: none;
-}
-
-/* Стили для элементов задач (будут добавляться JS) */
-.task-list li {
-  display: flex;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid #ecf0f1;
-  gap: 10px;
-}
-
-.task-list li:last-child {
-  border-bottom: none;
-}
-
-.task-checkbox {
-  width: 20px;
-  height: 20px;
-  accent-color: #e74c3c;
-  cursor: pointer;
-}
-
-.task-title {
-  flex: 1;
-  font-size: 1rem;
-  color: #2c3e50;
-}
-
-.task-title.completed {
-  text-decoration: line-through;
-  color: #95a5a6;
-}
-
-.task-pomodoro-count {
-  background-color: #ecf0f1;
-  border-radius: 50px;
-  padding: 4px 12px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #2c3e50;
-}
-
-.delete-task {
-  background: none;
-  border: none;
-  color: #e74c3c;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0 5px;
-}
-
-.delete-task:hover {
-  color: #c0392b;
-}
-
-/* Адаптивность */
-@media (max-width: 500px) {
-  .container {
-    padding: 20px;
-  }
-
-  .timer-display {
-    font-size: 4rem;
-  }
-
-  .btn {
-    padding: 10px 20px;
-    min-width: 80px;
-  }
-
-  .task-input-group {
-    flex-direction: column;
-  }
-
-  #new-task-input {
-    width: 100%;
-  }
-}
-
 /* Секция выбора активности */
 .activity-section {
-  margin-bottom: 30px;
+  margin-bottom: 20px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -239,6 +127,74 @@ body {
   border-color: #e74c3c;
 }
 
+/* Управление активностями */
+.activity-management {
+  margin-bottom: 30px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 15px;
+}
+
+.add-activity {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+#new-activity-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #ecf0f1;
+  border-radius: 50px;
+  font-size: 1rem;
+  outline: none;
+  min-width: 200px;
+}
+
+#new-activity-input:focus {
+  border-color: #e74c3c;
+}
+
+.activity-list {
+  list-style: none;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ecf0f1;
+  border-radius: 10px;
+  padding: 5px;
+}
+
+.activity-list li {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.activity-list li:last-child {
+  border-bottom: none;
+}
+
+.activity-name {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.delete-activity {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.delete-activity:hover {
+  color: #c0392b;
+}
+
 /* Секция выбора длительности */
 .duration-section {
   margin-bottom: 30px;
@@ -246,6 +202,23 @@ body {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+/* Пользовательская длительность */
+#custom-duration-container {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.custom-input {
+  width: 80px;
+  padding: 8px;
+  border: 2px solid #ecf0f1;
+  border-radius: 50px;
+  font-size: 1rem;
+  text-align: center;
 }
 
 /* Секция комментария */
@@ -266,3 +239,124 @@ body {
   border-top: 1px solid #ecf0f1;
   padding-top: 20px;
 }
+
+/* Адаптивность */
+@media (max-width: 500px) {
+  .container {
+    padding: 20px;
+  }
+
+  .timer-display {
+    font-size: 4rem;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    min-width: 80px;
+  }
+}
+
+/* ... предыдущие стили ... */
+
+/* Кнопка-иконка */
+.btn-icon {
+  background: none;
+  border: 2px solid #ecf0f1;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-icon:hover {
+  background-color: #ecf0f1;
+  border-color: #bdc3c7;
+}
+
+/* Управление активностями (изначально скрыто) */
+.activity-management {
+  margin-bottom: 30px;
+  padding: 15px;
+  background-color: #f9f9f9;
+  border-radius: 15px;
+  border: 1px solid #e0e0e0;
+}
+
+.add-activity {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+  flex-wrap: wrap;
+}
+
+#new-activity-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 2px solid #ecf0f1;
+  border-radius: 50px;
+  font-size: 1rem;
+  outline: none;
+  min-width: 200px;
+}
+
+#new-activity-input:focus {
+  border-color: #e74c3c;
+}
+
+.activity-list {
+  list-style: none;
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #ecf0f1;
+  border-radius: 10px;
+  padding: 5px;
+  margin-bottom: 15px;
+}
+
+.activity-list li {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.activity-list li:last-child {
+  border-bottom: none;
+}
+
+.activity-name {
+  flex: 1;
+  font-size: 0.95rem;
+  color: #2c3e50;
+}
+
+.delete-activity {
+  background: none;
+  border: none;
+  color: #e74c3c;
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 5px;
+}
+
+.delete-activity:hover {
+  color: #c0392b;
+}
+
+/* Кнопка закрытия панели управления */
+#close-activity-manager {
+  width: 100%;
+  background-color: #95a5a6;
+  color: white;
+}
+
+#close-activity-manager:hover {
+  background-color: #7f8c8d;
+}
+
+/* ... остальные стили без изменений ... */

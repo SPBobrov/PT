@@ -2,65 +2,69 @@ const express = require('express');
 const router = express.Router();
 const TaskModel = require('../models/TaskModel');
 const SessionModel = require('../models/SessionModel');
+const ActivityModel = require('../models/ActivityModel'); // новый импорт
 
-// Инициализируем модели
 const taskModel = new TaskModel();
 const sessionModel = new SessionModel();
+const activityModel = new ActivityModel(); // инициализация
 
-// ----- Маршруты для задач -----
+// ----- Маршруты для задач (не используются в интерфейсе, но оставлены) -----
 router.get('/tasks', (req, res) => {
-  const tasks = taskModel.getAll();
-  res.json(tasks);
+  res.json(taskModel.getAll());
 });
 
 router.post('/tasks', (req, res) => {
   const { title } = req.body;
-  if (!title) {
-    return res.status(400).json({ error: 'Поле title обязательно' });
-  }
-  const newTask = taskModel.create({ title });
-  res.status(201).json(newTask);
+  if (!title) return res.status(400).json({ error: 'Поле title обязательно' });
+  res.status(201).json(taskModel.create({ title }));
 });
 
 router.put('/tasks/:id', (req, res) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id)) {
-    return res.status(400).json({ error: 'Некорректный ID' });
-  }
-  const updatedTask = taskModel.update(id, req.body);
-  if (!updatedTask) {
-    return res.status(404).json({ error: 'Задача не найдена' });
-  }
-  res.json(updatedTask);
+  if (isNaN(id)) return res.status(400).json({ error: 'Некорректный ID' });
+  const updated = taskModel.update(id, req.body);
+  if (!updated) return res.status(404).json({ error: 'Задача не найдена' });
+  res.json(updated);
 });
 
 router.delete('/tasks/:id', (req, res) => {
   const id = parseInt(req.params.id);
-  if (isNaN(id)) {
-    return res.status(400).json({ error: 'Некорректный ID' });
-  }
+  if (isNaN(id)) return res.status(400).json({ error: 'Некорректный ID' });
   const deleted = taskModel.delete(id);
-  if (!deleted) {
-    return res.status(404).json({ error: 'Задача не найдена' });
-  }
+  if (!deleted) return res.status(404).json({ error: 'Задача не найдена' });
   res.status(204).send();
 });
 
-// ----- Маршруты для сессий активности -----
-// GET /api/sessions – получить все сессии
+// ----- Маршруты для сессий -----
 router.get('/sessions', (req, res) => {
-  const sessions = sessionModel.getAll();
-  res.json(sessions);
+  res.json(sessionModel.getAll());
 });
 
-// POST /api/sessions – сохранить завершённую сессию
 router.post('/sessions', (req, res) => {
   const { activityType, duration, comment } = req.body;
   if (!activityType || !duration) {
     return res.status(400).json({ error: 'activityType и duration обязательны' });
   }
-  const newSession = sessionModel.create({ activityType, duration, comment });
-  res.status(201).json(newSession);
+  res.status(201).json(sessionModel.create({ activityType, duration, comment }));
+});
+
+// ----- Маршруты для активностей -----
+router.get('/activities', (req, res) => {
+  res.json(activityModel.getAll());
+});
+
+router.post('/activities', (req, res) => {
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Поле name обязательно' });
+  res.status(201).json(activityModel.create(name));
+});
+
+router.delete('/activities/:id', (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'Некорректный ID' });
+  const deleted = activityModel.delete(id);
+  if (!deleted) return res.status(404).json({ error: 'Активность не найдена' });
+  res.status(204).send();
 });
 
 module.exports = router;

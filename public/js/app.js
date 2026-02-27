@@ -1,26 +1,18 @@
 // public/js/app.js
 
 const Timer = {
-  // Константы длительности режимов (в секундах)
   SHORT_BREAK: 5 * 60,
   LONG_BREAK: 15 * 60,
 
-  // Длительность рабочего интервала (по умолчанию 25 мин)
   workDuration: 25 * 60,
-
-  // Текущий режим
   currentMode: 'work',
-
-  // Текущая активность (значение из select)
   currentActivity: 'work',
-
   duration: 25 * 60,
   totalDuration: 25 * 60,
   startTime: null,
   timerInterval: null,
   isRunning: false,
 
-  // Возвращает длительность для указанного режима
   getDurationByMode(mode) {
     switch (mode) {
       case 'work': return this.workDuration;
@@ -30,26 +22,20 @@ const Timer = {
     }
   },
 
-  // Форматирование времени
   formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   },
 
-  // Обновление отображения таймера
   updateDisplay() {
     const timerElement = document.getElementById('timer-display');
-    if (timerElement) {
-      timerElement.textContent = this.formatTime(this.duration);
-    }
+    if (timerElement) timerElement.textContent = this.formatTime(this.duration);
   },
 
-  // Обновление индикатора режима
   updateModeIndicator() {
     const indicator = document.getElementById('mode-indicator');
     if (!indicator) return;
-
     const modeNames = {
       work: 'Работа',
       shortBreak: 'Короткий перерыв',
@@ -58,7 +44,6 @@ const Timer = {
     indicator.textContent = modeNames[this.currentMode] || 'Работа';
   },
 
-  // Основная функция тика
   tick() {
     if (!this.isRunning || !this.startTime) return;
 
@@ -67,24 +52,15 @@ const Timer = {
     const remaining = this.totalDuration - elapsedSeconds;
 
     if (remaining <= 0) {
-      // Таймер завершился
-      this.pause(); // останавливаем интервал
+      this.pause();
 
-      // Звуковой сигнал
       const sound = document.getElementById('timer-end-sound');
-      if (sound) {
-        sound.play().catch(e => console.log('Не удалось воспроизвести звук', e));
-      }
+      if (sound) sound.play().catch(e => console.log('Не удалось воспроизвести звук', e));
 
-      // Если завершился рабочий интервал – сохраняем сессию активности
-      if (this.currentMode === 'work') {
-        this.saveSession();
-      }
+      if (this.currentMode === 'work') this.saveSession();
 
-      // Сбрасываем длительность до полной для текущего режима
       this.duration = this.getDurationByMode(this.currentMode);
       this.updateDisplay();
-
       return;
     }
 
@@ -92,10 +68,9 @@ const Timer = {
     this.updateDisplay();
   },
 
-  // Сохранение сессии активности на сервере
   saveSession() {
     const activityType = this.currentActivity;
-    const duration = this.totalDuration; // сохраняем фактическую длительность завершённого интервала
+    const duration = this.totalDuration;
     const commentInput = document.getElementById('session-comment');
     const comment = commentInput ? commentInput.value : '';
 
@@ -105,29 +80,21 @@ const Timer = {
       body: JSON.stringify({ activityType, duration, comment }),
     })
       .then(response => {
-        if (!response.ok) {
-          console.error('Ошибка сохранения сессии:', response.statusText);
-        } else {
-          // Очищаем поле комментария после успешного сохранения
-          if (commentInput) commentInput.value = '';
-        }
+        if (!response.ok) console.error('Ошибка сохранения сессии:', response.statusText);
+        else if (commentInput) commentInput.value = '';
       })
       .catch(err => console.error('Ошибка сети при сохранении сессии:', err));
   },
 
-  // Запуск таймера
   start() {
     if (this.isRunning) return;
-
     this.isRunning = true;
     this.startTime = Date.now();
     this.totalDuration = this.duration;
-
     this.timerInterval = setInterval(() => this.tick(), 1000);
     this.tick();
   },
 
-  // Пауза
   pause() {
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
@@ -137,14 +104,12 @@ const Timer = {
     this.startTime = null;
   },
 
-  // Сброс
   reset() {
     this.pause();
     this.duration = this.getDurationByMode(this.currentMode);
     this.updateDisplay();
   },
 
-  // Переключение режима
   switchMode(mode) {
     this.pause();
     this.currentMode = mode;
@@ -153,61 +118,175 @@ const Timer = {
     this.updateModeIndicator();
   },
 
-  // Установка активности (вызывается при изменении select)
   setActivity(activity) {
     this.currentActivity = activity;
   }
 };
 
-// Обработчик видимости страницы
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && Timer.isRunning) {
-    Timer.tick();
+// Менеджер активностей
+const ActivityManager = {
+  activities: [],
+
+  async loadActivities() {
+    try {
+      const response = await fetch('/api/activities');
+      if (!response.ok) throw new Error('Ошибка загрузки активностей');
+      this.activities = await response.json();
+      this.renderSelect();
+      this.renderList();
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  renderSelect() {
+    const select = document.getElementById('activity-select');
+    if (!select) return;
+    select.innerHTML = '';
+    this.activities.forEach(act => {
+      const option = document.createElement('option');
+      option.value = act.name;
+      option.textContent = act.name;
+      select.appendChild(option);
+    });
+    if (this.activities.length > 0) {
+      select.value = this.activities[0].name;
+      Timer.setActivity(select.value);
+    }
+  },
+
+  renderList() {
+    const list = document.getElementById('activity-list');
+    if (!list) return;
+    list.innerHTML = '';
+    this.activities.forEach(act => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <span class="activity-name">${act.name}</span>
+        <button class="delete-activity" data-id="${act.id}">&times;</button>
+      `;
+      list.appendChild(li);
+    });
+
+    document.querySelectorAll('.delete-activity').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.dataset.id;
+        await this.deleteActivity(id);
+      });
+    });
+  },
+
+  async addActivity(name) {
+    if (!name.trim()) return;
+    try {
+      const response = await fetch('/api/activities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      if (!response.ok) throw new Error('Ошибка добавления');
+      const newActivity = await response.json();
+      this.activities.push(newActivity);
+      this.renderSelect();
+      this.renderList();
+    } catch (err) {
+      console.error(err);
+    }
+  },
+
+  async deleteActivity(id) {
+    if (!confirm('Удалить активность? Сессии с этой активностью останутся.')) return;
+    try {
+      const response = await fetch(`/api/activities/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Ошибка удаления');
+      this.activities = this.activities.filter(a => a.id != id);
+      this.renderSelect();
+      this.renderList();
+    } catch (err) {
+      console.error(err);
+    }
   }
+};
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && Timer.isRunning) Timer.tick();
 });
 
-// Инициализация при загрузке страницы
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   Timer.switchMode('work');
 
-  // Предзагрузка звука
   const sound = document.getElementById('timer-end-sound');
-  if (sound) {
-    sound.load();
-  }
+  if (sound) sound.load();
 
-  // Кнопки управления таймером
-  const startBtn = document.getElementById('start-btn');
-  const pauseBtn = document.getElementById('pause-btn');
-  const resetBtn = document.getElementById('reset-btn');
+  document.getElementById('start-btn')?.addEventListener('click', () => Timer.start());
+  document.getElementById('pause-btn')?.addEventListener('click', () => Timer.pause());
+  document.getElementById('reset-btn')?.addEventListener('click', () => Timer.reset());
 
-  if (startBtn) startBtn.addEventListener('click', () => Timer.start());
-  if (pauseBtn) pauseBtn.addEventListener('click', () => Timer.pause());
-  if (resetBtn) resetBtn.addEventListener('click', () => Timer.reset());
+  await ActivityManager.loadActivities();
 
-  // Выбор активности
   const activitySelect = document.getElementById('activity-select');
   if (activitySelect) {
-    activitySelect.addEventListener('change', (e) => {
-      Timer.setActivity(e.target.value);
-    });
-    // Устанавливаем начальное значение
-    Timer.setActivity(activitySelect.value);
+    activitySelect.addEventListener('change', (e) => Timer.setActivity(e.target.value));
   }
 
-  // Выбор длительности рабочего интервала
+  // Кнопка показа/скрытия панели управления активностями
+  const toggleBtn = document.getElementById('toggle-activity-manager');
+  const manager = document.getElementById('activity-manager');
+  const closeBtn = document.getElementById('close-activity-manager');
+
+  if (toggleBtn && manager) {
+    toggleBtn.addEventListener('click', () => {
+      manager.style.display = manager.style.display === 'none' ? 'block' : 'none';
+    });
+  }
+
+  if (closeBtn && manager) {
+    closeBtn.addEventListener('click', () => {
+      manager.style.display = 'none';
+    });
+  }
+
+  document.getElementById('add-activity-btn')?.addEventListener('click', () => {
+    const input = document.getElementById('new-activity-input');
+    ActivityManager.addActivity(input.value.trim());
+    input.value = '';
+  });
+
   const workDurationSelect = document.getElementById('work-duration');
-  if (workDurationSelect) {
-    workDurationSelect.addEventListener('change', (e) => {
-      Timer.workDuration = parseInt(e.target.value, 10);
-      // Если сейчас режим работы, обновляем отображаемую длительность
+  const customContainer = document.getElementById('custom-duration-container');
+  const customInput = document.getElementById('custom-minutes');
+
+  function updateWorkDuration() {
+    const selected = workDurationSelect.value;
+    if (selected === 'custom') {
+      customContainer.style.display = 'inline-flex';
+      const mins = parseInt(customInput.value, 10) || 1;
+      Timer.workDuration = mins * 60;
+    } else {
+      customContainer.style.display = 'none';
+      Timer.workDuration = parseInt(selected, 10);
+    }
+    if (Timer.currentMode === 'work') {
+      Timer.duration = Timer.workDuration;
+      Timer.updateDisplay();
+    }
+  }
+
+  workDurationSelect.addEventListener('change', updateWorkDuration);
+  customInput.addEventListener('input', () => {
+    if (workDurationSelect.value === 'custom') {
+      const mins = parseInt(customInput.value, 10) || 1;
+      Timer.workDuration = mins * 60;
       if (Timer.currentMode === 'work') {
         Timer.duration = Timer.workDuration;
         Timer.updateDisplay();
       }
-    });
-  }
+    }
+  });
 
-  // Здесь будет код для работы с задачами (TaskManager) – его нужно добавить позже
-  // Пока оставляем заглушку
+  updateWorkDuration();
+
+  if (activitySelect && activitySelect.value) {
+    Timer.setActivity(activitySelect.value);
+  }
 });
