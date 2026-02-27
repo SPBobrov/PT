@@ -1,31 +1,31 @@
-class ActivityModel {
-  constructor() {
-    this.activities = [
-      { id: 1, name: 'Работа' },
-      { id: 2, name: 'Учеба' },
-      { id: 3, name: 'Чтение' },
-      { id: 4, name: 'Текст' },
-      { id: 5, name: 'Физкультура' },
-      { id: 6, name: 'Отдых' }
-    ];
-    this.currentId = 7;
-  }
+const db = require('../db');
 
+class ActivityModel {
   getAll() {
-    return this.activities;
+    return new Promise((resolve, reject) => {
+      db.all("SELECT * FROM activities ORDER BY id", [], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
   }
 
   create(name) {
-    const newActivity = { id: this.currentId++, name };
-    this.activities.push(newActivity);
-    return newActivity;
+    return new Promise((resolve, reject) => {
+      db.run("INSERT INTO activities (name) VALUES (?)", [name], function(err) {
+        if (err) reject(err);
+        else resolve({ id: this.lastID, name });
+      });
+    });
   }
 
   delete(id) {
-    const index = this.activities.findIndex(a => a.id === id);
-    if (index === -1) return false;
-    this.activities.splice(index, 1);
-    return true;
+    return new Promise((resolve, reject) => {
+      db.run("DELETE FROM activities WHERE id = ?", [id], function(err) {
+        if (err) reject(err);
+        else resolve(this.changes > 0);
+      });
+    });
   }
 }
 

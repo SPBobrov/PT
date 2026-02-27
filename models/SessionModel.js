@@ -1,30 +1,37 @@
-// Простая in-memory модель для хранения завершённых сессий активности
-
+const db = require('../db');
 
 class SessionModel {
-  constructor() {
-    this.sessions = [];
-    this.currentId = 1;
-  }
-
   create(data) {
-    const newSession = {
-      id: this.currentId++,
-      activityType: data.activityType,
-      duration: data.duration,
-      comment: data.comment || '',
-      timestamp: new Date().toISOString(),
-    };
-    this.sessions.push(newSession);
-    return newSession;
+    return new Promise((resolve, reject) => {
+      const { activityType, duration, comment } = data;
+      const timestamp = new Date().toISOString();
+      db.run(
+        "INSERT INTO sessions (activityType, duration, comment, timestamp) VALUES (?, ?, ?, ?)",
+        [activityType, duration, comment || '', timestamp],
+        function(err) {
+          if (err) reject(err);
+          else resolve({ id: this.lastID, activityType, duration, comment, timestamp });
+        }
+      );
+    });
   }
 
   getAll() {
-    return this.sessions;
+    return new Promise((resolve, reject) => {
+      db.all("SELECT * FROM sessions ORDER BY timestamp DESC", [], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
   }
 
   getByActivity(activityType) {
-    return this.sessions.filter(s => s.activityType === activityType);
+    return new Promise((resolve, reject) => {
+      db.all("SELECT * FROM sessions WHERE activityType = ? ORDER BY timestamp DESC", [activityType], (err, rows) => {
+        if (err) reject(err);
+        else resolve(rows);
+      });
+    });
   }
 }
 

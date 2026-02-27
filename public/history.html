@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>История сессий - Pomodoro Timer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .history-controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .history-controls label {
+      font-weight: 600;
+    }
+    .history-controls input, .history-controls select {
+      padding: 8px 12px;
+      border: 2px solid #ecf0f1;
+      border-radius: 50px;
+      font-size: 1rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #ecf0f1;
+    }
+    th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+    }
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #e74c3c;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <a href="/" class="back-link">← Назад к таймеру</a>
+    <h1>История завершённых сессий</h1>
+
+    <div class="history-controls">
+      <div>
+        <label for="filter-date">Дата:</label>
+        <input type="date" id="filter-date">
+      </div>
+      <div>
+        <label for="filter-activity">Активность:</label>
+        <select id="filter-activity">
+          <option value="">Все</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="apply-filter">Применить</button>
+      <button class="btn btn-secondary" id="reset-filter">Сбросить</button>
+    </div>
+
+    <table id="sessions-table">
+      <thead>
+        <tr>
+          <th>Дата и время</th>
+          <th>Активность</th>
+          <th>Длительность</th>
+          <th>Комментарий</th>
+        </tr>
+      </thead>
+      <tbody id="sessions-list">
+        <!-- Данные будут загружены через JS -->
+      </tbody>
+    </table>
+
+    <div class="version">Версия 1.5.0</div>
+  </main>
+
+  <script>
+    let allSessions = [];
+    let activities = [];
+
+    async function loadData() {
+      try {
+        const [sessionsRes, activitiesRes] = await Promise.all([
+          fetch('/api/sessions'),
+          fetch('/api/activities')
+        ]);
+        allSessions = await sessionsRes.json();
+        activities = await activitiesRes.json();
+
+        populateActivityFilter();
+        renderTable(allSessions);
+      } catch (err) {
+        console.error('Ошибка загрузки данных:', err);
+      }
+    }
+
+    function populateActivityFilter() {
+      const select = document.getElementById('filter-activity');
+      select.innerHTML = '<option value="">Все</option>';
+      activities.forEach(act => {
+        const option = document.createElement('option');
+        option.value = act.name;
+        option.textContent = act.name;
+        select.appendChild(option);
+      });
+    }
+
+    function formatDuration(seconds) {
+      const mins = Math.floor(seconds / 60);
+      return `${mins} мин`;
+    }
+
+    function formatDateTime(isoString) {
+      const d = new Date(isoString);
+      return d.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function renderTable(sessions) {
+      const tbody = document.getElementById('sessions-list');
+      if (sessions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">Нет записей</td></tr>';
+        return;
+      }
+      tbody.innerHTML = sessions.map(s => `
+        <tr>
+          <td>${formatDateTime(s.timestamp)}</td>
+          <td>${s.activityType}</td>
+          <td>${formatDuration(s.duration)}</td>
+          <td>${s.comment || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    function applyFilter() {
+      const dateFilter = document.getElementById('filter-date').value;
+      const activityFilter = document.getElementById('filter-activity').value;
+
+      let filtered = allSessions;
+
+      if (dateFilter) {
+        filtered = filtered.filter(s => s.timestamp.startsWith(dateFilter));
+      }
+
+      if (activityFilter) {
+        filtered = filtered.filter(s => s.activityType === activityFilter);
+      }
+
+      renderTable(filtered);
+    }
+
+    document.getElementById('apply-filter').addEventListener('click', applyFilter);
+    document.getElementById('reset-filter').addEventListener('click', () => {
+      document.getElementById('filter-date').value = '';
+      document.getElementById('filter-activity').value = '';
+      renderTable(allSessions);
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

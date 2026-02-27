@@ -36,12 +36,22 @@ const Timer = {
   updateModeIndicator() {
     const indicator = document.getElementById('mode-indicator');
     if (!indicator) return;
-    const modeNames = {
-      work: 'Работа',
-      shortBreak: 'Короткий перерыв',
-      longBreak: 'Длинный перерыв'
-    };
-    indicator.textContent = modeNames[this.currentMode] || 'Работа';
+
+    if (this.currentMode === 'work') {
+      // Показываем название выбранной активности из селекта
+      const select = document.getElementById('activity-select');
+      if (select && select.selectedIndex >= 0) {
+        indicator.textContent = select.options[select.selectedIndex].text;
+      } else {
+        indicator.textContent = 'Работа';
+      }
+    } else {
+      const modeNames = {
+        shortBreak: 'Короткий перерыв',
+        longBreak: 'Длинный перерыв'
+      };
+      indicator.textContent = modeNames[this.currentMode] || 'Перерыв';
+    }
   },
 
   tick() {
@@ -120,6 +130,10 @@ const Timer = {
 
   setActivity(activity) {
     this.currentActivity = activity;
+    // при смене активности обновляем индикатор, если режим работы
+    if (this.currentMode === 'work') {
+      this.updateModeIndicator();
+    }
   }
 };
 
@@ -152,6 +166,10 @@ const ActivityManager = {
     if (this.activities.length > 0) {
       select.value = this.activities[0].name;
       Timer.setActivity(select.value);
+    }
+    // После обновления селекта обновляем индикатор, если режим работы
+    if (Timer.currentMode === 'work') {
+      Timer.updateModeIndicator();
     }
   },
 
@@ -226,7 +244,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   const activitySelect = document.getElementById('activity-select');
   if (activitySelect) {
-    activitySelect.addEventListener('change', (e) => Timer.setActivity(e.target.value));
+    activitySelect.addEventListener('change', (e) => {
+      Timer.setActivity(e.target.value);
+    });
   }
 
   // Кнопка показа/скрытия панели управления активностями
