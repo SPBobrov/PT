@@ -34,7 +34,7 @@ body {
 
 .mode-indicator {
   font-size: 1.2rem;
-  color: #e74c3c; /* акцентный красный */
+  color: #e74c3c;
   font-weight: 500;
   letter-spacing: 1px;
   margin-bottom: 10px;
@@ -202,7 +202,7 @@ body {
   }
 }
 
-/* Добавить в конец файла */
+/* Секция выбора активности */
 .activity-section {
   margin-bottom: 30px;
   display: flex;
@@ -211,12 +211,17 @@ body {
   flex-wrap: wrap;
 }
 
-.activity-section label {
+.activity-section label,
+.duration-section label,
+.comment-section label {
   font-weight: 600;
   color: #2c3e50;
+  min-width: 120px;
 }
 
-.activity-select {
+.activity-select,
+.duration-select,
+.comment-section input {
   padding: 10px 15px;
   border: 2px solid #ecf0f1;
   border-radius: 50px;
@@ -228,6 +233,36 @@ body {
   min-width: 200px;
 }
 
-.activity-select:focus {
+.activity-select:focus,
+.duration-select:focus,
+.comment-section input:focus {
   border-color: #e74c3c;
+}
+
+/* Секция выбора длительности */
+.duration-section {
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Секция комментария */
+.comment-section {
+  margin-bottom: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Версия продукта */
+.version {
+  text-align: center;
+  margin-top: 30px;
+  color: #95a5a6;
+  font-size: 0.85rem;
+  border-top: 1px solid #ecf0f1;
+  padding-top: 20px;
 }

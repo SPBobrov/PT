@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const TaskModel = require('../models/TaskModel');
-const SessionModel = require('../models/SessionModel'); // новая модель
+const SessionModel = require('../models/SessionModel');
 
 // Инициализируем модели
 const taskModel = new TaskModel();
 const sessionModel = new SessionModel();
 
-// ----- Маршруты для задач (без изменений) -----
+// ----- Маршруты для задач -----
 router.get('/tasks', (req, res) => {
   const tasks = taskModel.getAll();
   res.json(tasks);
@@ -46,7 +46,7 @@ router.delete('/tasks/:id', (req, res) => {
   res.status(204).send();
 });
 
-// ----- Новые маршруты для сессий активности -----
+// ----- Маршруты для сессий активности -----
 // GET /api/sessions – получить все сессии
 router.get('/sessions', (req, res) => {
   const sessions = sessionModel.getAll();
@@ -55,11 +55,11 @@ router.get('/sessions', (req, res) => {
 
 // POST /api/sessions – сохранить завершённую сессию
 router.post('/sessions', (req, res) => {
-  const { activityType, duration } = req.body;
+  const { activityType, duration, comment } = req.body;
   if (!activityType || !duration) {
     return res.status(400).json({ error: 'activityType и duration обязательны' });
   }
-  const newSession = sessionModel.create({ activityType, duration });
+  const newSession = sessionModel.create({ activityType, duration, comment });
   res.status(201).json(newSession);
 });
 

@@ -4,7 +4,7 @@ const path = require('path');
 const net = require('net');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 
 // Middleware
 app.use(bodyParser.json());
@@ -56,7 +56,7 @@ async function startServer() {
       });
     } else {
       console.log(`Порт ${PORT} занят. Попробуйте использовать другой порт.`);
-      console.log('Для Windows выполните: netstat -ano | findstr :3000');
+      console.log('Для Windows выполните: netstat -ano | findstr :8080');
       process.exit(1);
     }
   } else {

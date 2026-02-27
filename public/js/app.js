@@ -2,9 +2,11 @@
 
 const Timer = {
   // Константы длительности режимов (в секундах)
-  WORK_TIME: 25 * 60,
   SHORT_BREAK: 5 * 60,
   LONG_BREAK: 15 * 60,
+
+  // Длительность рабочего интервала (по умолчанию 25 мин)
+  workDuration: 25 * 60,
 
   // Текущий режим
   currentMode: 'work',
@@ -21,10 +23,10 @@ const Timer = {
   // Возвращает длительность для указанного режима
   getDurationByMode(mode) {
     switch (mode) {
-      case 'work': return this.WORK_TIME;
+      case 'work': return this.workDuration;
       case 'shortBreak': return this.SHORT_BREAK;
       case 'longBreak': return this.LONG_BREAK;
-      default: return this.WORK_TIME;
+      default: return this.workDuration;
     }
   },
 
@@ -66,9 +68,7 @@ const Timer = {
 
     if (remaining <= 0) {
       // Таймер завершился
-      this.duration = 0;
-      this.updateDisplay();
-      this.pause();
+      this.pause(); // останавливаем интервал
 
       // Звуковой сигнал
       const sound = document.getElementById('timer-end-sound');
@@ -81,9 +81,10 @@ const Timer = {
         this.saveSession();
       }
 
-      // Автоматическое переключение режима (опционально)
-      // if (this.currentMode === 'work') this.switchMode('shortBreak');
-      // else if (this.currentMode === 'shortBreak') this.switchMode('work');
+      // Сбрасываем длительность до полной для текущего режима
+      this.duration = this.getDurationByMode(this.currentMode);
+      this.updateDisplay();
+
       return;
     }
 
@@ -94,16 +95,21 @@ const Timer = {
   // Сохранение сессии активности на сервере
   saveSession() {
     const activityType = this.currentActivity;
-    const duration = this.WORK_TIME; // сохраняем полную длительность рабочего периода
+    const duration = this.totalDuration; // сохраняем фактическую длительность завершённого интервала
+    const commentInput = document.getElementById('session-comment');
+    const comment = commentInput ? commentInput.value : '';
 
     fetch('/api/sessions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ activityType, duration }),
+      body: JSON.stringify({ activityType, duration, comment }),
     })
       .then(response => {
         if (!response.ok) {
           console.error('Ошибка сохранения сессии:', response.statusText);
+        } else {
+          // Очищаем поле комментария после успешного сохранения
+          if (commentInput) commentInput.value = '';
         }
       })
       .catch(err => console.error('Ошибка сети при сохранении сессии:', err));
@@ -164,6 +170,12 @@ document.addEventListener('visibilitychange', () => {
 document.addEventListener('DOMContentLoaded', () => {
   Timer.switchMode('work');
 
+  // Предзагрузка звука
+  const sound = document.getElementById('timer-end-sound');
+  if (sound) {
+    sound.load();
+  }
+
   // Кнопки управления таймером
   const startBtn = document.getElementById('start-btn');
   const pauseBtn = document.getElementById('pause-btn');
@@ -181,6 +193,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     // Устанавливаем начальное значение
     Timer.setActivity(activitySelect.value);
+  }
+
+  // Выбор длительности рабочего интервала
+  const workDurationSelect = document.getElementById('work-duration');
+  if (workDurationSelect) {
+    workDurationSelect.addEventListener('change', (e) => {
+      Timer.workDuration = parseInt(e.target.value, 10);
+      // Если сейчас режим работы, обновляем отображаемую длительность
+      if (Timer.currentMode === 'work') {
+        Timer.duration = Timer.workDuration;
+        Timer.updateDisplay();
+      }
+    });
   }
 
   // Здесь будет код для работы с задачами (TaskManager) – его нужно добавить позже

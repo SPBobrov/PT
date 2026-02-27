@@ -32,6 +32,21 @@
       </select>
     </section>
 
+    <!-- Выбор длительности рабочего интервала -->
+    <section class="duration-section">
+      <label for="work-duration">Длительность работы:</label>
+      <select id="work-duration" class="duration-select">
+        <option value="1500">25 минут</option>
+        <option value="300">5 минут</option>
+      </select>
+    </section>
+
+    <!-- Поле для комментария к сессии -->
+    <section class="comment-section">
+      <label for="session-comment">Комментарий к сессии:</label>
+      <input type="text" id="session-comment" placeholder="Что делали?">
+    </section>
+
     <!-- Секция задач -->
     <section class="tasks-section">
       <h2>Задачи</h2>
@@ -43,6 +58,8 @@
         <!-- Сюда JS будет добавлять элементы задач -->
       </ul>
     </section>
+    <!-- Версия продукта -->
+    <div class="version">Версия 1.2.0</div>
   </main>
 
   <!-- Аудио для звукового сигнала -->

@@ -11,6 +11,7 @@ class SessionModel {
       id: this.currentId++,
       activityType: data.activityType,
       duration: data.duration, // в секундах
+      comment: data.comment || '', // поле для комментария
       timestamp: new Date().toISOString(),
     };
     this.sessions.push(newSession);
