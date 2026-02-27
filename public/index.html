@@ -8,6 +8,11 @@
 </head>
 <body>
   <main class="container">
+    <!-- Кнопка выхода в правом верхнем углу -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+      <button id="logout-btn" class="btn btn-secondary" style="padding: 8px 20px;">Выйти</button>
+    </div>
+
     <!-- Секция таймера -->
     <section class="timer-section">
       <div class="mode-indicator" id="mode-indicator">Работа</div>
@@ -57,18 +62,23 @@
       <input type="text" id="session-comment" placeholder="Что делали?">
     </section>
 
-    <!-- Нижний колонтитул с версией и ссылкой на историю -->
     <!-- Нижний колонтитул -->
-<!-- Нижний колонтитул -->
-<div class="footer-links">
-  <span class="version">Версия 1.8.0</span>
-  <a href="/history.html" target="_blank" class="history-link">История сессий</a>
-</div>
+    <div class="footer-links">
+      <span class="version">Версия 1.9.1</span>
+      <a href="/history.html" target="_blank" class="history-link">История сессий</a>
+    </div>
   </main>
 
-  <!-- Аудио для звукового сигнала -->
+  <!-- Аудио -->
   <audio id="timer-end-sound" src="sounds/bell.mp3" preload="auto"></audio>
 
   <script src="js/app.js"></script>
+  <script>
+    // Обработка выхода
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await fetch('/api/logout');
+      window.location.href = '/login.html';
+    });
+  </script>
 </body>
 </html>
