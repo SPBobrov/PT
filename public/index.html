@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pomodoro Timer</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <main class="container">
+    <!-- Кнопка выхода в правом верхнем углу -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
+      <button id="logout-btn" class="btn btn-secondary" style="padding: 8px 20px;">Выйти</button>
+    </div>
+
+    <!-- Секция таймера -->
+    <!-- Секция таймера -->
+    <section class="timer-section">
+      <div class="mode-indicator" id="mode-indicator">Работа</div>
+      <div class="timer-display" id="timer-display">25:00</div>
+      <div class="timer-controls">
+        <button class="btn btn-primary" id="start-btn">Старт</button>
+        <button class="btn btn-secondary" id="pause-btn">Пауза</button>
+        <button class="btn btn-secondary" id="stop-btn">Стоп</button>
+        <button class="btn btn-secondary" id="reset-btn">Сброс</button>
+      </div>
+    </section>
+
+    <!-- Выбор активности -->
+    <section class="activity-section">
+      <label for="activity-select">Активность:</label>
+      <select id="activity-select" class="activity-select"></select>
+      <button class="btn-icon" id="toggle-activity-manager" title="Управление активностями">⚙️</button>
+    </section>
+
+    <!-- Управление активностями (скрыто по умолчанию) -->
+    <section class="activity-management" id="activity-manager" style="display: none;">
+      <div class="add-activity">
+        <input type="text" id="new-activity-input" placeholder="Новая активность...">
+        <button class="btn btn-primary" id="add-activity-btn">Добавить</button>
+      </div>
+      <ul class="activity-list" id="activity-list">
+        <!-- динамический список активностей с кнопками удаления -->
+      </ul>
+      <button class="btn btn-secondary" id="close-activity-manager">Закрыть</button>
+    </section>
+
+    <!-- Выбор длительности рабочего интервала -->
+    <section class="duration-section">
+      <label for="work-duration">Длительность работы:</label>
+      <select id="work-duration" class="duration-select">
+        <option value="1500">25 минут</option>
+        <option value="300">5 минут</option>
+        <option value="custom">Пользовательская</option>
+      </select>
+      <div id="custom-duration-container" style="display: none;">
+        <input type="number" id="custom-minutes" min="1" value="25" class="custom-input"> минут
+      </div>
+    </section>
+
+    <!-- Поле для комментария к сессии -->
+    <section class="comment-section">
+      <label for="session-comment">Комментарий к сессии:</label>
+      <input type="text" id="session-comment" placeholder="Что делали?">
+    </section>
+
+    <!-- Нижний колонтитул -->
+    <div class="footer-links">
+      <span class="version">Версия 1.9.1</span>
+      <a href="/history.html" target="_blank" class="history-link">История сессий</a>
+    </div>
+  </main>
+
+  <!-- Аудио -->
+  <audio id="timer-end-sound" src="sounds/bell.mp3" preload="auto"></audio>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Обработка выхода
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await fetch('/api/logout');
+      window.location.href = '/login.html';
+    });
+  </script>
+</body>
+</html>

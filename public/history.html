@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>История сессий - Pomodoro Timer</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Дополнительные стили только для страницы истории */
+    .page-title {
+      color: #2c3e50;
+      margin-bottom: 25px;
+      font-size: 2rem;
+      border-bottom: 2px solid #ecf0f1;
+      padding-bottom: 10px;
+    }
+
+    .chart-card {
+      background: white;
+      border-radius: 20px;
+      padding: 25px;
+      margin-bottom: 30px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+      border: 1px solid #ecf0f1;
+    }
+
+    .chart-controls {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+      margin-bottom: 25px;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 15px;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      min-width: 180px;
+    }
+
+    .control-group label {
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 0.9rem;
+    }
+
+    .control-group select,
+    .control-group input {
+      padding: 10px 12px;
+      border: 2px solid #ecf0f1;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      background: white;
+      transition: border-color 0.2s;
+    }
+
+    .control-group select:focus,
+    .control-group input:focus {
+      border-color: #e74c3c;
+      outline: none;
+    }
+
+    .multi-select {
+      height: auto;
+      min-height: 120px;
+      border-radius: 15px !important;
+      padding: 8px;
+    }
+
+    .multi-select option {
+      padding: 8px 12px;
+      border-radius: 30px;
+      margin: 2px 0;
+    }
+
+    .multi-select option:checked {
+      background: #e74c3c linear-gradient(0deg, #e74c3c 0%, #e74c3c 100%);
+      color: white;
+    }
+
+    .btn-chart {
+      background-color: #e74c3c;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 12px 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      align-self: flex-end;
+      margin-bottom: 2px;
+    }
+
+    .btn-chart:hover {
+      background-color: #c0392b;
+    }
+
+    .details-section {
+      margin-top: 40px;
+      border-top: 2px dashed #ecf0f1;
+      padding-top: 30px;
+    }
+
+    .details-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .details-header h2 {
+      color: #2c3e50;
+      font-size: 1.8rem;
+    }
+
+    .toggle-details {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      border-radius: 50px;
+      padding: 10px 25px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .toggle-details:hover {
+      background-color: #2980b9;
+    }
+
+    .details-content {
+      display: none; /* скрыто по умолчанию */
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      align-items: center;
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 15px;
+      margin-bottom: 25px;
+    }
+
+    .filter-bar .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .filter-bar label {
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .filter-bar input,
+    .filter-bar select {
+      padding: 8px 12px;
+      border: 2px solid #ecf0f1;
+      border-radius: 50px;
+      font-size: 0.95rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: #2c3e50;
+      color: white;
+      padding: 15px 12px;
+      font-weight: 600;
+      text-align: left;
+    }
+
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #ecf0f1;
+      color: #2c3e50;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background-color: #f8f9fa;
+    }
+
+    .version {
+      text-align: center;
+      margin-top: 40px;
+      color: #95a5a6;
+      font-size: 0.85rem;
+      border-top: 1px solid #ecf0f1;
+      padding-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1 class="page-title">📊 Аналитика сессий</h1>
+
+    <!-- Блок аналитики (всегда виден) -->
+    <div class="chart-card">
+      <h2 style="margin-top: 0; margin-bottom: 20px; color: #2c3e50;">Суммарное время по дням</h2>
+      <div class="chart-controls">
+        <div class="control-group">
+          <label for="chart-activities">Активности (выберите несколько):</label>
+          <select id="chart-activities" class="multi-select" multiple size="4">
+            <!-- заполняется скриптом -->
+          </select>
+        </div>
+        <div class="control-group">
+          <label for="chart-start-date">Начальная дата:</label>
+          <input type="date" id="chart-start-date">
+        </div>
+        <div class="control-group">
+          <label for="chart-end-date">Конечная дата:</label>
+          <input type="date" id="chart-end-date">
+        </div>
+        <button class="btn-chart" id="build-chart">Построить график</button>
+      </div>
+      <canvas id="activity-chart" style="max-height: 400px; width: 100%;"></canvas>
+    </div>
+
+    <!-- Блок деталей (скрыт, открывается кнопкой) -->
+    <div class="details-section">
+      <div class="details-header">
+        <h2>📋 Детальные записи</h2>
+        <button class="toggle-details" id="toggle-details">Показать детали</button>
+      </div>
+      <div class="details-content" id="details-content">
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="filter-date">Дата:</label>
+            <input type="date" id="filter-date">
+          </div>
+          <div class="filter-group">
+            <label for="filter-activity">Активность:</label>
+            <select id="filter-activity">
+              <option value="">Все</option>
+            </select>
+          </div>
+          <button class="btn btn-primary" id="apply-filter">Применить</button>
+          <button class="btn btn-secondary" id="reset-filter">Сбросить</button>
+        </div>
+
+        <div class="table-container">
+          <table id="sessions-table">
+            <thead>
+              <tr>
+                <th>Дата и время</th>
+                <th>Активность</th>
+                <th>Длительность</th>
+                <th>Комментарий</th>
+              </tr>
+            </thead>
+            <tbody id="sessions-list">
+              <!-- Данные будут загружены через JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="version">Версия 1.9.1</div>
+  </main>
+
+  <script>
+    let allSessions = [];
+    let activities = [];
+    let chartInstance = null;
+
+    async function loadData() {
+      try {
+        const [sessionsRes, activitiesRes] = await Promise.all([
+          fetch('/api/sessions'),
+          fetch('/api/activities')
+        ]);
+        allSessions = await sessionsRes.json();
+        activities = await activitiesRes.json();
+
+        populateActivityFilter();
+        populateChartActivities();
+        renderTable(allSessions);
+      } catch (err) {
+        console.error('Ошибка загрузки данных:', err);
+      }
+    }
+
+    function populateActivityFilter() {
+      const select = document.getElementById('filter-activity');
+      select.innerHTML = '<option value="">Все</option>';
+      activities.forEach(act => {
+        const option = document.createElement('option');
+        option.value = act.name;
+        option.textContent = act.name;
+        select.appendChild(option);
+      });
+    }
+
+    function populateChartActivities() {
+      const select = document.getElementById('chart-activities');
+      select.innerHTML = '';
+      activities.forEach(act => {
+        const option = document.createElement('option');
+        option.value = act.name;
+        option.textContent = act.name;
+        select.appendChild(option);
+      });
+      // Выделим первую активность по умолчанию
+      if (select.options.length > 0) {
+        select.options[0].selected = true;
+      }
+    }
+
+    function formatDuration(seconds) {
+      const mins = Math.floor(seconds / 60);
+      return `${mins} мин`;
+    }
+
+    function formatDateTime(isoString) {
+      const d = new Date(isoString);
+      return d.toLocaleString('ru-RU', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function renderTable(sessions) {
+      const tbody = document.getElementById('sessions-list');
+      if (sessions.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">Нет записей</td></tr>';
+        return;
+      }
+      tbody.innerHTML = sessions.map(s => `
+        <tr>
+          <td>${formatDateTime(s.timestamp)}</td>
+          <td>${s.activityType}</td>
+          <td>${formatDuration(s.duration)}</td>
+          <td>${s.comment || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    function applyFilter() {
+      const dateFilter = document.getElementById('filter-date').value;
+      const activityFilter = document.getElementById('filter-activity').value;
+
+      let filtered = allSessions;
+
+      if (dateFilter) {
+        filtered = filtered.filter(s => s.timestamp.startsWith(dateFilter));
+      }
+
+      if (activityFilter) {
+        filtered = filtered.filter(s => s.activityType === activityFilter);
+      }
+
+      renderTable(filtered);
+    }
+
+    // Построение графика
+    function buildChart() {
+      const selectedOptions = Array.from(document.getElementById('chart-activities').selectedOptions).map(opt => opt.value);
+      const startDate = document.getElementById('chart-start-date').value;
+      const endDate = document.getElementById('chart-end-date').value;
+
+      if (selectedOptions.length === 0) {
+        alert('Выберите хотя бы одну активность');
+        return;
+      }
+
+      // Фильтруем сессии по выбранным активностям и датам
+      let filtered = allSessions.filter(s => selectedOptions.includes(s.activityType));
+
+      if (startDate) {
+        filtered = filtered.filter(s => s.timestamp.split('T')[0] >= startDate);
+      }
+      if (endDate) {
+        filtered = filtered.filter(s => s.timestamp.split('T')[0] <= endDate);
+      }
+
+      // Группируем по датам (суммируем длительность)
+      const dailyTotals = {};
+      filtered.forEach(s => {
+        const date = s.timestamp.split('T')[0];
+        dailyTotals[date] = (dailyTotals[date] || 0) + s.duration;
+      });
+
+      const sortedDates = Object.keys(dailyTotals).sort();
+      const data = sortedDates.map(date => dailyTotals[date] / 60); // в минутах
+
+      const ctx = document.getElementById('activity-chart').getContext('2d');
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sortedDates,
+          datasets: [{
+            label: 'Суммарное время (минуты)',
+            data: data,
+            backgroundColor: 'rgba(231, 76, 60, 0.7)',
+            borderColor: '#e74c3c',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: 'Минуты'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Дата'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Управление видимостью деталей
+    function toggleDetails() {
+      const content = document.getElementById('details-content');
+      const btn = document.getElementById('toggle-details');
+      if (content.style.display === 'none' || content.style.display === '') {
+        content.style.display = 'block';
+        btn.textContent = 'Скрыть детали';
+      } else {
+        content.style.display = 'none';
+        btn.textContent = 'Показать детали';
+      }
+    }
+
+    document.getElementById('toggle-details').addEventListener('click', toggleDetails);
+    document.getElementById('apply-filter').addEventListener('click', applyFilter);
+    document.getElementById('reset-filter').addEventListener('click', () => {
+      document.getElementById('filter-date').value = '';
+      document.getElementById('filter-activity').value = '';
+      renderTable(allSessions);
+    });
+
+    document.getElementById('build-chart').addEventListener('click', buildChart);
+
+    // Инициализация: детали скрыты
+    document.getElementById('details-content').style.display = 'none';
+
+    loadData();
+  </script>
+</body>
+</html>

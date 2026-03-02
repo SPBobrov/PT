@@ -1,0 +1,31 @@
+# Зависимости
+node_modules/
+
+# Базы данных
+*.sqlite
+*.db
+sessions.db
+
+# Логи
+*.log
+app.log
+
+# Файлы окружения
+.env
+.envrc
+
+# Временные файлы
+tmp/
+*.tmp
+
+# Zone.Identifier файлы (артефакты Windows)
+*:Zone.Identifier
+
+# Файлы, специфичные для ОС
+.DS_Store
+Thumbs.db
+
+# Другие возможные артефакты
+*.pid
+*.seed
+*.pid.lock
