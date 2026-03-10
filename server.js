@@ -23,6 +23,11 @@ console.error = function(...args) {
 const app = express();
 const PORT = process.env.PORT || 8080;
 
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+  console.log('Подключено к SQLite базе данных.');
+});
+
 // Middleware
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -162,7 +167,7 @@ app.get('/api/status', requireAuth, (req, res) => {
 });
 
 // Функция для проверки доступности порта
-function isPortAvailable(port) {
+/*function isPortAvailable(port) {
   return new Promise((resolve) => {
     const server = net.createServer();
     server.once('error', () => resolve(false));
@@ -173,9 +178,9 @@ function isPortAvailable(port) {
     server.listen(port);
   });
 }
-
+*/
 // Запуск сервера
-async function startServer() {
+/*async function startServer() {
   const portAvailable = await isPortAvailable(PORT);
   
   if (!portAvailable) {
@@ -215,5 +220,5 @@ function startListening() {
     }
   });
 }
-
-startServer();
+*/
+//startServer();
