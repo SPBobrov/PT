@@ -276,6 +276,34 @@
       justify-content: flex-end;
       margin-top: 10px;
     }
+
+    /* Принудительная горизонтальная прокрутка для таблицы */
+.table-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* плавный скролл на мобильных */
+  margin-bottom: 20px;
+}
+
+#sessions-table {
+  min-width: 800px; /* гарантирует, что на десктопе появится скролл */
+  width: 100%;
+  table-layout: auto; /* можно fixed, но auto лучше для длинных текстов */
+}
+
+/* Чтобы колонка комментариев не раздувала таблицу слишком сильно */
+#sessions-table td:nth-child(4) {
+  max-width: 300px;
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Фиксированная ширина для колонки действий, чтобы кнопки были видны */
+#sessions-table th:last-child,
+#sessions-table td:last-child {
+  width: 80px;
+  text-align: center;
+  white-space: nowrap;
+}
   </style>
 </head>
 <body>
