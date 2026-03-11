@@ -210,6 +210,72 @@
       border-top: 1px solid #ecf0f1;
       padding-top: 20px;
     }
+
+    /* Стили для модального окна */
+    #session-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    #session-modal > div {
+      background: white;
+      padding: 25px;
+      border-radius: 20px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+
+    #session-modal h3 {
+      margin-top: 0;
+      color: #2c3e50;
+    }
+
+    #session-modal form {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    #session-modal label {
+      font-weight: 600;
+      color: #2c3e50;
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    #session-modal input,
+    #session-modal select,
+    #session-modal textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #ecf0f1;
+      border-radius: 50px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    #session-modal input:focus,
+    #session-modal select:focus,
+    #session-modal textarea:focus {
+      border-color: #e74c3c;
+      outline: none;
+    }
+
+    #session-modal .btn-group {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
@@ -261,6 +327,11 @@
           <button class="btn btn-secondary" id="reset-filter">Сбросить</button>
         </div>
 
+        <!-- Кнопка добавления новой записи -->
+        <div style="margin-bottom: 15px;">
+          <button id="add-session-btn" class="btn btn-primary">➕ Добавить запись</button>
+        </div>
+
         <div class="table-container">
           <table id="sessions-table">
             <thead>
@@ -269,6 +340,7 @@
                 <th>Активность</th>
                 <th>Длительность</th>
                 <th>Комментарий</th>
+                <th>Действия</th>
               </tr>
             </thead>
             <tbody id="sessions-list">
@@ -279,8 +351,38 @@
       </div>
     </div>
 
-    <div class="version">Версия 1.9.1</div>
+    <div class="version">Версия 1.11.0</div>
   </main>
+
+  <!-- Модальное окно для добавления/редактирования сессии -->
+  <div id="session-modal">
+    <div>
+      <h3 id="modal-title">Добавить запись</h3>
+      <form id="session-form">
+        <input type="hidden" id="session-id">
+        <div>
+          <label for="session-datetime">Дата и время:</label>
+          <input type="datetime-local" id="session-datetime" required>
+        </div>
+        <div>
+          <label for="session-activity">Активность:</label>
+          <select id="session-activity" required></select>
+        </div>
+        <div>
+          <label for="session-minutes">Длительность (минуты):</label>
+          <input type="number" id="session-minutes" min="1" required>
+        </div>
+        <div>
+          <label for="session-comment">Комментарий:</label>
+          <input type="text" id="session-comment">
+        </div>
+        <div class="btn-group">
+          <button type="button" id="modal-cancel" class="btn btn-secondary">Отмена</button>
+          <button type="submit" class="btn btn-primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
     let allSessions = [];
@@ -298,6 +400,7 @@
 
         populateActivityFilter();
         populateChartActivities();
+        populateActivitySelect();
         renderTable(allSessions);
       } catch (err) {
         console.error('Ошибка загрузки данных:', err);
@@ -324,10 +427,21 @@
         option.textContent = act.name;
         select.appendChild(option);
       });
-      // Выделим первую активность по умолчанию
       if (select.options.length > 0) {
         select.options[0].selected = true;
       }
+    }
+
+    function populateActivitySelect() {
+      const select = document.getElementById('session-activity');
+      if (!select) return;
+      select.innerHTML = '';
+      activities.forEach(act => {
+        const option = document.createElement('option');
+        option.value = act.name;
+        option.textContent = act.name;
+        select.appendChild(option);
+      });
     }
 
     function formatDuration(seconds) {
@@ -349,7 +463,7 @@
     function renderTable(sessions) {
       const tbody = document.getElementById('sessions-list');
       if (sessions.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:30px;">Нет записей</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px;">Нет записей</td></tr>';
         return;
       }
       tbody.innerHTML = sessions.map(s => `
@@ -358,10 +472,80 @@
           <td>${s.activityType}</td>
           <td>${formatDuration(s.duration)}</td>
           <td>${s.comment || ''}</td>
+          <td>
+            <button class="edit-session btn-icon" data-id="${s.id}" title="Редактировать">✏️</button>
+            <button class="delete-session btn-icon" data-id="${s.id}" title="Удалить">🗑️</button>
+          </td>
         </tr>
       `).join('');
+
+      // Добавляем обработчики на кнопки редактирования и удаления
+      document.querySelectorAll('.edit-session').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const id = e.target.dataset.id;
+          const session = allSessions.find(s => s.id == id);
+          if (session) openEditModal(session);
+        });
+      });
+
+      document.querySelectorAll('.delete-session').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.target.dataset.id;
+          if (!confirm('Удалить запись?')) return;
+          const response = await fetch(`/api/sessions/${id}`, { method: 'DELETE' });
+          if (response.ok) {
+            allSessions = allSessions.filter(s => s.id != id);
+            renderTable(allSessions);
+          } else {
+            alert('Ошибка удаления');
+          }
+        });
+      });
     }
 
+    // Функции для работы с модальным окном
+    function openAddModal() {
+      document.getElementById('session-id').value = '';
+      document.getElementById('modal-title').textContent = 'Добавить запись';
+      document.getElementById('session-datetime').value = '';
+      document.getElementById('session-minutes').value = '';
+      document.getElementById('session-comment').value = '';
+      // Устанавливаем первую активность по умолчанию
+      const select = document.getElementById('session-activity');
+      if (select.options.length > 0) select.selectedIndex = 0;
+      document.getElementById('session-modal').style.display = 'flex';
+    }
+
+    function openEditModal(session) {
+      document.getElementById('session-id').value = session.id;
+      document.getElementById('modal-title').textContent = 'Редактировать запись';
+      // Преобразуем ISO строку в формат datetime-local (yyyy-MM-ddThh:mm)
+      const dt = new Date(session.timestamp);
+      const year = dt.getFullYear();
+      const month = String(dt.getMonth() + 1).padStart(2, '0');
+      const day = String(dt.getDate()).padStart(2, '0');
+      const hours = String(dt.getHours()).padStart(2, '0');
+      const minutes = String(dt.getMinutes()).padStart(2, '0');
+      document.getElementById('session-datetime').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+      document.getElementById('session-minutes').value = Math.floor(session.duration / 60);
+      document.getElementById('session-comment').value = session.comment || '';
+
+      const select = document.getElementById('session-activity');
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === session.activityType) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+
+      document.getElementById('session-modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('session-modal').style.display = 'none';
+    }
+
+    // Фильтры
     function applyFilter() {
       const dateFilter = document.getElementById('filter-date').value;
       const activityFilter = document.getElementById('filter-activity').value;
@@ -390,7 +574,6 @@
         return;
       }
 
-      // Фильтруем сессии по выбранным активностям и датам
       let filtered = allSessions.filter(s => selectedOptions.includes(s.activityType));
 
       if (startDate) {
@@ -400,7 +583,6 @@
         filtered = filtered.filter(s => s.timestamp.split('T')[0] <= endDate);
       }
 
-      // Группируем по датам (суммируем длительность)
       const dailyTotals = {};
       filtered.forEach(s => {
         const date = s.timestamp.split('T')[0];
@@ -434,16 +616,10 @@
           scales: {
             y: {
               beginAtZero: true,
-              title: {
-                display: true,
-                text: 'Минуты'
-              }
+              title: { display: true, text: 'Минуты' }
             },
             x: {
-              title: {
-                display: true,
-                text: 'Дата'
-              }
+              title: { display: true, text: 'Дата' }
             }
           }
         }
@@ -463,20 +639,63 @@
       }
     }
 
-    document.getElementById('toggle-details').addEventListener('click', toggleDetails);
-    document.getElementById('apply-filter').addEventListener('click', applyFilter);
-    document.getElementById('reset-filter').addEventListener('click', () => {
-      document.getElementById('filter-date').value = '';
-      document.getElementById('filter-activity').value = '';
-      renderTable(allSessions);
+    // Обработчики событий
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('toggle-details').addEventListener('click', toggleDetails);
+      document.getElementById('apply-filter').addEventListener('click', applyFilter);
+      document.getElementById('reset-filter').addEventListener('click', () => {
+        document.getElementById('filter-date').value = '';
+        document.getElementById('filter-activity').value = '';
+        renderTable(allSessions);
+      });
+      document.getElementById('build-chart').addEventListener('click', buildChart);
+      document.getElementById('add-session-btn').addEventListener('click', openAddModal);
+      document.getElementById('modal-cancel').addEventListener('click', closeModal);
+
+      // Обработка отправки формы
+      document.getElementById('session-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('session-id').value;
+        const activity = document.getElementById('session-activity').value;
+        const minutes = parseInt(document.getElementById('session-minutes').value);
+        const comment = document.getElementById('session-comment').value;
+        const datetime = document.getElementById('session-datetime').value;
+
+        if (!activity || !minutes || !datetime) {
+          alert('Заполните все обязательные поля');
+          return;
+        }
+
+        const data = {
+          activityType: activity,
+          duration: minutes * 60,
+          comment: comment,
+          timestamp: new Date(datetime).toISOString()
+        };
+
+        const url = id ? `/api/sessions/${id}` : '/api/sessions';
+        const method = id ? 'PUT' : 'POST';
+
+        const response = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+        });
+
+        if (response.ok) {
+          closeModal();
+          // Перезагружаем данные, чтобы увидеть изменения
+          loadData();
+        } else {
+          const err = await response.json();
+          alert('Ошибка сохранения: ' + (err.error || 'неизвестная ошибка'));
+        }
+      });
+
+      // Инициализация: детали скрыты
+      document.getElementById('details-content').style.display = 'none';
+      loadData();
     });
-
-    document.getElementById('build-chart').addEventListener('click', buildChart);
-
-    // Инициализация: детали скрыты
-    document.getElementById('details-content').style.display = 'none';
-
-    loadData();
   </script>
 </body>
 </html>

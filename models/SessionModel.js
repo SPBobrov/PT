@@ -33,6 +33,33 @@ class SessionModel {
       });
     });
   }
+
+  // Новый метод для обновления сессии
+  update(id, data) {
+    return new Promise((resolve, reject) => {
+      const { activityType, duration, comment, timestamp } = data;
+      db.run(
+        `UPDATE sessions 
+         SET activityType = ?, duration = ?, comment = ?, timestamp = ?
+         WHERE id = ?`,
+        [activityType, duration, comment, timestamp, id],
+        function(err) {
+          if (err) reject(err);
+          else resolve(this.changes > 0);
+        }
+      );
+    });
+  }
+
+  // Новый метод для удаления сессии
+  delete(id) {
+    return new Promise((resolve, reject) => {
+      db.run("DELETE FROM sessions WHERE id = ?", [id], function(err) {
+        if (err) reject(err);
+        else resolve(this.changes > 0);
+      });
+    });
+  }
 }
 
 module.exports = SessionModel;

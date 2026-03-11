@@ -62,4 +62,34 @@ router.post('/sessions', async (req, res) => {
   }
 });
 
+// PUT /api/sessions/:id – обновить сессию
+router.put('/sessions/:id', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'Некорректный ID' });
+  const { activityType, duration, comment, timestamp } = req.body;
+  if (!activityType || !duration || !timestamp) {
+    return res.status(400).json({ error: 'activityType, duration и timestamp обязательны' });
+  }
+  try {
+    const updated = await sessionModel.update(id, { activityType, duration, comment, timestamp });
+    if (!updated) return res.status(404).json({ error: 'Сессия не найдена' });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// DELETE /api/sessions/:id – удалить сессию
+router.delete('/sessions/:id', async (req, res) => {
+  const id = parseInt(req.params.id);
+  if (isNaN(id)) return res.status(400).json({ error: 'Некорректный ID' });
+  try {
+    const deleted = await sessionModel.delete(id);
+    if (!deleted) return res.status(404).json({ error: 'Сессия не найдена' });
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
