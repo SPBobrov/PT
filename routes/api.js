@@ -92,4 +92,24 @@ router.delete('/sessions/:id', async (req, res) => {
   }
 });
 
+// POST /api/sessions/bulk – сохранить несколько сессий сразу
+router.post('/sessions/bulk', async (req, res) => {
+  const sessions = req.body; // ожидаем массив объектов
+  if (!Array.isArray(sessions)) {
+    return res.status(400).json({ error: 'Ожидался массив сессий' });
+  }
+  try {
+    const results = [];
+    for (const s of sessions) {
+      const { activityType, duration, comment } = s;
+      if (!activityType || !duration) continue;
+      const newSession = await sessionModel.create({ activityType, duration, comment });
+      results.push(newSession);
+    }
+    res.status(201).json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

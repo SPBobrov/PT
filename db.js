@@ -46,4 +46,14 @@ function initTables() {
   });
 }
 
+// После создания таблиц и добавления начальных активностей
+const requiredActivities = ['Работа', 'Учеба', 'Физкультура', 'Английский', 'Вайбкодинг', 'Чтение', 'Текст', 'Система', 'Отдых'];
+requiredActivities.forEach(name => {
+  db.get("SELECT id FROM activities WHERE name = ?", [name], (err, row) => {
+    if (!row) {
+      db.run("INSERT INTO activities (name) VALUES (?)", [name]);
+    }
+  });
+});
+
 module.exports = db;

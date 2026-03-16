@@ -8,79 +8,79 @@
 </head>
 <body>
   <main class="container">
-    <!-- Кнопка выхода в правом верхнем углу -->
+    <!-- Кнопка выхода -->
     <div style="display: flex; justify-content: flex-end; margin-bottom: 10px;">
       <button id="logout-btn" class="btn btn-secondary" style="padding: 8px 20px;">Выйти</button>
     </div>
 
-    <!-- Секция таймера -->
-    <!-- Секция таймера -->
-    <section class="timer-section">
-      <div class="mode-indicator" id="mode-indicator">Работа</div>
-      <div class="timer-display" id="timer-display">25:00</div>
-      <div class="timer-controls">
-        <button class="btn btn-primary" id="start-btn">Старт</button>
-        <button class="btn btn-secondary" id="pause-btn">Пауза</button>
-        <button class="btn btn-secondary" id="stop-btn">Стоп</button>
-        <button class="btn btn-secondary" id="reset-btn">Сброс</button>
+    <!-- Глобальные настройки -->
+    <section class="global-settings">
+      <div class="duration-section">
+        <label for="work-duration">Длительность работы:</label>
+        <select id="work-duration" class="duration-select">
+          <option value="1500">25 минут</option>
+          <option value="300">5 минут</option>
+          <option value="custom">Пользовательская</option>
+        </select>
+        <div id="custom-duration-container" style="display: none;">
+          <input type="number" id="custom-minutes" min="1" value="25" class="custom-input"> минут
+        </div>
+      </div>
+      <div class="global-comment">
+        <label for="global-comment">Комментарий (по умолчанию):</label>
+        <input type="text" id="global-comment" placeholder="Что делаете?">
       </div>
     </section>
 
-    <!-- Выбор активности -->
-    <section class="activity-section">
-      <label for="activity-select">Активность:</label>
-      <select id="activity-select" class="activity-select"></select>
-      <button class="btn-icon" id="toggle-activity-manager" title="Управление активностями">⚙️</button>
+    <!-- Панель быстрых активностей -->
+    <section class="activity-quick-panel">
+     <div class="quick-buttons">
+  <button class="activity-btn" data-activity="Работа" title="Работа">Работа</button>
+  <button class="activity-btn" data-activity="Учеба" title="Учеба">Учеба</button>
+  <button class="activity-btn" data-activity="Физкультура" title="Физкультура">Физкультура</button>
+  <button class="activity-btn" data-activity="Английский" title="Английский">Английский</button>
+  <button class="activity-btn" data-activity="Вайбкодинг" title="Вайбкодинг">Вайбкодинг</button>
+  <button class="activity-btn" data-activity="Чтение" title="Чтение">Чтение</button>
+  <button class="activity-btn" data-activity="Текст" title="Текст">Текст</button>
+  <button class="activity-btn" data-activity="Система" title="Система">Система</button>
+  <button class="activity-btn" id="more-activities-btn" title="Другие активности">➕</button>
+</div>
     </section>
 
-    <!-- Управление активностями (скрыто по умолчанию) -->
+    <!-- Управление активностями (шестерёнка) -->
     <section class="activity-management" id="activity-manager" style="display: none;">
       <div class="add-activity">
         <input type="text" id="new-activity-input" placeholder="Новая активность...">
         <button class="btn btn-primary" id="add-activity-btn">Добавить</button>
       </div>
-      <ul class="activity-list" id="activity-list">
-        <!-- динамический список активностей с кнопками удаления -->
-      </ul>
+      <ul class="activity-list" id="activity-list"></ul>
       <button class="btn btn-secondary" id="close-activity-manager">Закрыть</button>
     </section>
 
-    <!-- Выбор длительности рабочего интервала -->
-    <section class="duration-section">
-      <label for="work-duration">Длительность работы:</label>
-      <select id="work-duration" class="duration-select">
-        <option value="1500">25 минут</option>
-        <option value="300">5 минут</option>
-        <option value="custom">Пользовательская</option>
-      </select>
-      <div id="custom-duration-container" style="display: none;">
-        <input type="number" id="custom-minutes" min="1" value="25" class="custom-input"> минут
-      </div>
-    </section>
-
-    <!-- Поле для комментария к сессии -->
-    <section class="comment-section">
-      <label for="session-comment">Комментарий к сессии:</label>
-      <input type="text" id="session-comment" placeholder="Что делали?">
-    </section>
+    <!-- Контейнер для всех таймеров -->
+    <div id="timers-container" class="timers-container"></div>
 
     <!-- Нижний колонтитул -->
     <div class="footer-links">
-      <span class="version">Версия 11.1.0</span>
+      <span class="version">Версия 1.13.1</span>
       <a href="/history.html" target="_blank" class="history-link">История сессий</a>
     </div>
   </main>
+
+  <!-- Модальное окно для выбора других активностей -->
+  <div id="activity-choice-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: white; padding: 20px; border-radius: 15px; max-width: 400px; width: 90%;">
+      <h3>Выберите активность</h3>
+      <div id="activity-choice-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto;"></div>
+      <div style="display: flex; justify-content: flex-end; margin-top: 15px;">
+        <button class="btn btn-secondary" id="close-choice-modal">Отмена</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Аудио -->
   <audio id="timer-end-sound" src="sounds/bell.mp3" preload="auto"></audio>
 
   <script src="js/app.js"></script>
-  <script>
-    // Обработка выхода
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await fetch('/api/logout');
-      window.location.href = '/login.html';
-    });
-  </script>
 </body>
 </html>
