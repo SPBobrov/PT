@@ -85,6 +85,24 @@ const Timer = {
       .catch(err => console.error('Ошибка сети при сохранении сессии:', err));
   },
 
+  // Обработчик аварийного завершения (закрытие вкладки/браузера)
+  handleUnload() {
+    if (this.isRunning && this.currentMode === 'work' && this.startTime) {
+      const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+      if (elapsed > 0) {
+        const activityType = this.currentActivity;
+        const commentInput = document.getElementById('session-comment');
+        const comment = commentInput ? commentInput.value : '';
+        const data = JSON.stringify({ activityType, duration: elapsed, comment });
+
+        // Используем sendBeacon для гарантированной отправки при выгрузке
+        navigator.sendBeacon('/api/sessions', new Blob([data], { type: 'application/json' }));
+      }
+      // Останавливаем таймер, но не сбрасываем длительность (она всё равно исчезнет)
+      this.pause();
+    }
+  },
+
   start() {
     if (this.isRunning) return;
     this.isRunning = true;
@@ -226,10 +244,13 @@ const ActivityManager = {
   }
 };
 
-// Обработчик видимости страницы
+// Обработчик видимости страницы (для возобновления тика при возвращении)
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible' && Timer.isRunning) Timer.tick();
 });
+
+// Обработчик аварийного завершения (закрытие вкладки/браузера)
+window.addEventListener('beforeunload', () => Timer.handleUnload());
 
 // Инициализация при загрузке страницы
 document.addEventListener('DOMContentLoaded', async () => {
