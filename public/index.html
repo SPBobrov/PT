@@ -17,11 +17,22 @@
     <section class="global-settings">
       <div class="duration-section">
         <label for="work-duration">Длительность работы:</label>
-        <select id="work-duration" class="duration-select">
-          <option value="1500">25 минут</option>
-          <option value="300">5 минут</option>
-          <option value="custom">Пользовательская</option>
-        </select>
+        <!-- Выбор длительности рабочего интервала -->
+    <section class="duration-section">
+      <label for="work-duration">Длительность работы:</label>
+      <select id="work-duration" class="duration-select">
+        <option value="1500">25 минут</option>
+        <option value="300">5 минут</option>
+        <option value="900">15 минут</option>
+        <option value="1800">30 минут</option>
+        <option value="3600">60 минут</option>
+        <option value="4500">75 минут</option>
+        <option value="custom">Пользовательская</option>
+      </select>
+  <div id="custom-duration-container" style="display: none;">
+    <input type="number" id="custom-minutes" min="1" value="25" class="custom-input"> минут
+  </div>
+</section>
         <div id="custom-duration-container" style="display: none;">
           <input type="number" id="custom-minutes" min="1" value="25" class="custom-input"> минут
         </div>
@@ -62,7 +73,7 @@
 
     <!-- Нижний колонтитул -->
     <div class="footer-links">
-      <span class="version">Версия 1.13.1</span>
+      <span class="version">Версия 1.13.2</span>
       <a href="/history.html" target="_blank" class="history-link">История сессий</a>
     </div>
   </main>
