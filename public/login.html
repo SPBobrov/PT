@@ -3,96 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Вход - Pomodoro Timer</title>
+  <title>Вход</title>
   <link rel="stylesheet" href="css/style.css">
-  <style>
-    body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
-    .login-container {
-      max-width: 400px;
-      width: 90%;
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-      padding: 40px;
-    }
-    h1 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 30px;
-    }
-    .form-group {
-      margin-bottom: 20px;
-    }
-    label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #2c3e50;
-    }
-    input {
-      width: 100%;
-      padding: 12px 15px;
-      border: 2px solid #ecf0f1;
-      border-radius: 50px;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-    input:focus {
-      border-color: #e74c3c;
-      outline: none;
-    }
-    .btn-login {
-      width: 100%;
-      padding: 14px;
-      background-color: #e74c3c;
-      color: white;
-      border: none;
-      border-radius: 50px;
-      font-size: 1.2rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-    .btn-login:hover {
-      background-color: #c0392b;
-    }
-    .error-message {
-      color: #e74c3c;
-      margin-top: 10px;
-      text-align: center;
-      display: none;
-    }
-    .info {
-      text-align: center;
-      margin-top: 20px;
-      color: #7f8c8d;
-      font-size: 0.9rem;
-    }
-  </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>🍅 Pomodoro Timer</h1>
+  <main class="container" style="max-width: 400px;">
+    <h1>Pomodoro Timer</h1>
     <form id="login-form">
-      <div class="form-group">
+      <div>
         <label for="username">Имя пользователя</label>
-        <input type="text" id="username" name="username" required autofocus>
+        <input type="text" id="username" required autofocus>
       </div>
-      <div class="form-group">
+      <div>
         <label for="password">Пароль</label>
-        <input type="password" id="password" name="password" required>
+        <input type="password" id="password" required>
       </div>
-      <button type="submit" class="btn-login">Войти</button>
-      <div class="error-message" id="error-message"></div>
+      <button type="submit" class="btn">Войти</button>
+      <div style="color: red; display: none;" id="error-message"></div>
     </form>
-    <div class="info">Демо: admin / admin</div>
-  </div>
+    <div style="margin-top: 15px;">Демо: admin / admin</div>
+  </main>
 
   <script>
     document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -107,9 +37,7 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password })
         });
-
         const data = await response.json();
-
         if (response.ok && data.success) {
           window.location.href = data.redirect || '/';
         } else {
